@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  comfyui:
+    build:
+      context: .
+      dockerfile: dockerfile
+    user: "1000:1000"
+    devices:
+      - "nvidia.com/gpu=all"      # CDI-Hook hands over the NVIDIA GPU
+    security_opt:
+      - label=disable             # SELinux can use external paths
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./custom_nodes:/workspace/custom_nodes
+      - ./models:/workspace/models        
+      - ./output:/workspace/output
+      - ./venv:/opt/venv                   
+    tmpfs:
+      - /iworkspace/input:size=1G,mode=1777
+      - /workspace/temp:size=1G,mode=1777
+    deploy:
+      resources:
+        limits:
+          memory: 40g          # hard Limit
+          cpus: "8.0"
+        reservations:
+          memory: 35g           # OOM-Killer earlier
+    restart: "no"

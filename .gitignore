@@ -1,3 +1,10 @@
+# comfyUI stuff
+models/
+output/
+custom_nodes/
+workflows/
+
+# python stuff
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

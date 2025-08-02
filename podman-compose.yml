@@ -14,11 +14,11 @@ services:
       - "8188"
     volumes:
       - ./custom_nodes:/workspace/custom_nodes
-      - ./models:/workspace/models        
+      - ./models:/workspace/models
       - ./output:/workspace/output
-      - ./venv:/opt/venv                   
+      - ./venv:/opt/venv
     tmpfs:
-      - /iworkspace/input:size=1G,mode=1777
+      - /workspace/input:size=1G,mode=1777
       - /workspace/temp:size=1G,mode=1777
     deploy:
       resources:

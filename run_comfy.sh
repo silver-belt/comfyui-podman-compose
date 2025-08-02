@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# Build if files have changed
+# Build container image
 podman-compose build
 
 # Container start & follow Logs

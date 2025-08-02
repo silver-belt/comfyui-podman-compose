@@ -3,6 +3,8 @@ models/
 output/
 custom_nodes/
 workflows/
+custom_nodes/
+venv/
 
 # proxy credentials
 nginx/htpasswd

@@ -1,2 +1,2 @@
 trampoline==0.1.2
-torchsde==0.2.5
+torchsde

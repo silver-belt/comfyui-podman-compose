@@ -4,6 +4,11 @@ output/
 custom_nodes/
 workflows/
 
+# proxy credentials
+nginx/htpasswd
+nginx/certs/*.crt
+nginx/certs/*.key
+
 # python stuff
 # Byte-compiled / optimized / DLL files
 __pycache__/

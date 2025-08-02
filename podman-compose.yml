@@ -10,8 +10,8 @@ services:
       - "nvidia.com/gpu=all"      # CDI-Hook hands over the NVIDIA GPU
     security_opt:
       - label=disable             # SELinux can use external paths
-    ports:
-      - "8188:8188"
+    expose:
+      - "8188"
     volumes:
       - ./custom_nodes:/workspace/custom_nodes
       - ./models:/workspace/models
@@ -28,3 +28,14 @@ services:
         reservations:
           memory: 35g           # OOM-Killer earlier
     restart: "no"
+
+  proxy:
+    image: nginx:alpine
+    depends_on:
+      - comfyui
+    ports:
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/htpasswd:/etc/nginx/htpasswd:ro
+      - ./nginx/certs:/etc/nginx/certs:ro

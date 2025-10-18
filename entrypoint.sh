@@ -11,7 +11,13 @@ ln -snf /workspace/temp         ComfyUI/temp         2>/dev/null || true
 
 # ---------- 1) sync with github comfyUI code ----------
 if [ -d ComfyUI/.git ]; then
-  git -C ComfyUI pull --ff-only
+  if [ -n "${COMFYUI_REF:-}" ]; then
+    echo "[+] Syncing ComfyUI to ref: $COMFYUI_REF"
+    git -C ComfyUI fetch --depth=1 origin "$COMFYUI_REF"
+    git -C ComfyUI reset --hard FETCH_HEAD
+  else
+    git -C ComfyUI pull --ff-only
+  fi
 else
   echo "[!] Stale ComfyUI dir – räume Code auf"
   mkdir -p ComfyUI
@@ -19,7 +25,12 @@ else
        ! -name custom_nodes ! -name models ! -name output \
        ! -name input ! -name temp \
        -exec rm -rf {} +
-  git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI_tmp
+  if [ -n "${COMFYUI_REF:-}" ]; then
+    git clone --depth 1 --branch "$COMFYUI_REF" \
+      https://github.com/comfyanonymous/ComfyUI.git ComfyUI_tmp
+  else
+    git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI_tmp
+  fi
   cp -rT ComfyUI_tmp ComfyUI && rm -rf ComfyUI_tmp
 fi
 

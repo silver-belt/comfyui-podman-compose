@@ -65,9 +65,33 @@ Optionally, the ComfyUI instance can be served through an `nginx` reverse proxy 
      ./run_comfy.sh
      ```
    - **Standard (no proxy)** (Port 8188):
-     → ComfyUI is available at <http://localhost:8188>  
+     → ComfyUI is available at <http://localhost:8188>
    - **With nginx reverse proxy** (Port 8443, HTTPS & Auth):
      → ComfyUI is available at <https://localhost:8443> (protected by credentials in `nginx/htpasswd`)
+
+---
+
+## Pinning the ComfyUI Version
+
+The container respects the environment variable `COMFYUI_REF` to select the desired
+branch, tag, or commit of the upstream ComfyUI repository during the initial clone
+and subsequent updates. To pin the deployment to a specific version, pass the build
+argument when (re)building the image and keep the same variable during `up`:
+
+```bash
+COMFYUI_REF=v1.3.3 podman-compose build --build-arg COMFYUI_REF=v1.3.3
+COMFYUI_REF=v1.3.3 podman-compose up -d --force-recreate
+```
+
+Alternatively, export the variable once for the current shell session before running
+`./run_comfy.sh`:
+
+```bash
+export COMFYUI_REF=v1.3.3
+./run_comfy.sh
+```
+
+Omit the variable (or reset it to the default `master`) to follow the upstream default branch again.
 
 ---
 

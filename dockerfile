@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ARG UID=1000
 ARG GID=1000
+ARG COMFYUI_REF=master
 RUN groupadd -g $GID comfy && useradd -u $UID -g comfy -m -d $WORKDIR comfy
+ENV COMFYUI_REF=$COMFYUI_REF
 USER comfy
 WORKDIR $WORKDIR
 

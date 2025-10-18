@@ -9,7 +9,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        git python3 python3-venv python3-pip libglib2.0-0 libgl1 ffmpeg tini \
+        git python3 python3-venv python3-pip ffmpeg tini \
+        # Install Mesa/GL and GLib so OpenCV can load libGL.so.1 for ComfyUI-VideoHelperSuite
+        libglib2.0-0 libgl1 libglx-mesa0 fonts-dejavu-core fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
 ARG UID=1000

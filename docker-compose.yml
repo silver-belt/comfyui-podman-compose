@@ -2,14 +2,16 @@ version: "3.9"
 
 services:
   comfyui:
+    image: comfyui:latest
+    container_name: comfyui
     build:
       context: .
       dockerfile: dockerfile
     user: "1000:1000"
     devices:
-      - "nvidia.com/gpu=all"      # CDI-Hook hands over the NVIDIA GPU
+      - "nvidia.com/gpu=all"      # Podman CDI hook hands over the NVIDIA GPU
     security_opt:
-      - label=disable             # SELinux can use external paths
+      - label=disable             # Needed on SELinux hosts (ignored elsewhere)
     expose:
       - "8188"
     volumes:
@@ -23,14 +25,20 @@ services:
     deploy:
       resources:
         limits:
-          memory: 40g          # hard Limit
+          memory: 40g          # hard limit
           cpus: "8.0"
         reservations:
           memory: 35g           # OOM-Killer earlier
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu           # Docker alternative to runtime: nvidia + NVIDIA_VISIBLE_DEVICES
     restart: "no"
 
   proxy:
     image: nginx:alpine
+    container_name: comfyui-proxy
     depends_on:
       - comfyui
     ports:

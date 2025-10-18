@@ -15,9 +15,32 @@ services:
       - ./models:/workspace/models
       - ./output:/workspace/output
       - ./venv:/opt/venv
+      # persist all your settings & extra nodes
+      - ./settings:/app/ComfyUI/user/default:rw
+      # persist just your saved flows (overrides the workflows/ in default)
+      - ./flows:/app/ComfyUI/user/default/workflows:rw
+      # does not dump stuff into the writable layer of the image and inflates it
+      - ./temp_disk:/workspace/temp:rw
+      - ./tmp_disk:/tmp:rw
+      # Caches persistent
+      - ./cache:/workspace/.cache
+      - ./nv:/root/.nv
     tmpfs:
       - /workspace/input:size=1G,mode=1777
-      - /workspace/temp:size=1G,mode=1777
+    environment:
+      # Caches
+      - XDG_CACHE_HOME=/workspace/.cache
+      - HF_HOME=/workspace/.cache/huggingface
+      - TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers
+      - HUGGINGFACE_HUB_CACHE=/workspace/.cache/huggingface/hub
+      - TORCH_HOME=/workspace/.cache/torch
+      - PIP_CACHE_DIR=/workspace/.cache/pip
+      - CUDA_CACHE_PATH=/root/.nv/ComputeCache
+
+      # all systemwide Temp-targets to one location
+      - TMPDIR=/workspace/temp
+      - TEMP=/workspace/temp
+      - TMP=/workspace/temp
     deploy:
       resources:
         limits:

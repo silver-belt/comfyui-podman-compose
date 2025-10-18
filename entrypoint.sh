@@ -2,6 +2,7 @@
 set -e
 
 # ---------- 0) link external dirs ----------
+mkdir -p ComfyUI
 ln -snf /workspace/custom_nodes ComfyUI/custom_nodes 2>/dev/null || true
 ln -snf /workspace/models       ComfyUI/models       2>/dev/null || true
 ln -snf /workspace/output       ComfyUI/output       2>/dev/null || true

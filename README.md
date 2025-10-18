@@ -74,7 +74,7 @@ Optionally, the ComfyUI instance can be served through an `nginx` reverse proxy 
 ## Stopping the Services
 
 ```bash
-./kill-cofyui.sh
+./kill-comfyui.sh
 ```
 Stops all running ComfyUI containers.
 
@@ -87,7 +87,7 @@ Stops all running ComfyUI containers.
 - `entrypoint.sh` – Container entrypoint (symlinks, code checkout, Python virtual environment, launch ComfyUI)
 - Helper scripts:
   - `run_comfy.sh` – builds image, starts container, follows logs
-  - `kill-cofyui.sh` – stops running containers
+  - `kill-comfyui.sh` – stops running containers
   - `clear_podman_cache.sh` – removes Podman cache data
 
 ---

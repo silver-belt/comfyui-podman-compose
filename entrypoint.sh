@@ -1,13 +1,44 @@
 #!/usr/bin/env bash
 set -e
 
-# ---------- 0) link external dirs ----------
+# ---------- 0) prepare temp dirs & link external dirs ----------
 mkdir -p ComfyUI
+
+ensure_temp_mount() {
+  local dir="$1"
+  mkdir -p "$dir" || return 1
+
+  # Try to make the directory world-writable (sticky when possible) so multiple
+  # users/processes can share it safely. On Windows-backed volumes chmod/chown
+  # may be limited, therefore ignore errors.
+  chmod 1777 "$dir" 2>/dev/null || chmod 0777 "$dir" 2>/dev/null || true
+  chown $(id -u):$(id -g) "$dir" 2>/dev/null || true
+
+  local probe="$dir/.write-test-$$"
+  if ! (touch "$probe" 2>/dev/null && rm -f "$probe" 2>/dev/null); then
+    return 1
+  fi
+}
+
+TEMP_TARGET="/tmp"
+if ! ensure_temp_mount "$TEMP_TARGET"; then
+  echo "[!] /tmp is not writable in this environment – falling back to /workspace/temp" >&2
+  TEMP_TARGET="/workspace/temp"
+  if ! ensure_temp_mount "$TEMP_TARGET"; then
+    echo "[!] Could not prepare a writable temp directory. Check your mounted volumes." >&2
+    exit 1
+  fi
+fi
+
+export TMPDIR="$TEMP_TARGET"
+export TEMP="$TEMP_TARGET"
+export TMP="$TEMP_TARGET"
+
 ln -snf /workspace/custom_nodes ComfyUI/custom_nodes 2>/dev/null || true
 ln -snf /workspace/models       ComfyUI/models       2>/dev/null || true
 ln -snf /workspace/output       ComfyUI/output       2>/dev/null || true
 ln -snf /workspace/input        ComfyUI/input        2>/dev/null || true
-ln -snf /workspace/temp         ComfyUI/temp         2>/dev/null || true
+ln -snf "$TEMP_TARGET"         ComfyUI/temp         2>/dev/null || true
 
 # ---------- 1) sync with github comfyUI code ----------
 if [ -d ComfyUI/.git ]; then

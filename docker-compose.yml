@@ -8,10 +8,6 @@ services:
       context: .
       dockerfile: dockerfile
     user: "1000:1000"
-    devices:
-      - "nvidia.com/gpu=all"      # Podman CDI hook hands over the NVIDIA GPU
-    security_opt:
-      - label=disable             # Needed on SELinux hosts (ignored elsewhere)
     expose:
       - "8188"
     volumes:

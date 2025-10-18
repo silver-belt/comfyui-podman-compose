@@ -7,14 +7,19 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WORKDIR=/workspace \
     PATH="/opt/venv/bin:$PATH"
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      git python3 python3-venv python3-pip libglib2.0-0 libgl1 ffmpeg tini \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git python3 python3-venv python3-pip libglib2.0-0 libgl1 ffmpeg tini \
     && rm -rf /var/lib/apt/lists/*
 
 ARG UID=1000
 ARG GID=1000
 ARG COMFYUI_REF=master
-RUN groupadd -g $GID comfy && useradd -u $UID -g comfy -m -d $WORKDIR comfy
+RUN set -eux; \
+    groupadd --gid "${GID}" comfy; \
+    useradd --uid "${UID}" --gid "${GID}" \
+        --create-home --home-dir "$WORKDIR" \
+        --shell /bin/bash --no-log-init comfy
 ENV COMFYUI_REF=$COMFYUI_REF
 USER comfy
 WORKDIR $WORKDIR

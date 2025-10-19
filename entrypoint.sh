@@ -34,19 +34,6 @@ else
   cp -rT ComfyUI_tmp ComfyUI && rm -rf ComfyUI_tmp
 fi
 
-# ---------- 2) virtual environment ----------
-# ensure Ownership (if volume might come root-owned)
-if [ ! -w "$VENV_PATH" ]; then
-  echo "[+] Fix ownership of venv mount"
-  chown -R $(id -u):$(id -g) "$VENV_PATH"
-fi
-
-# create venv
-if [ ! -x "$VENV_PATH/bin/pip" ]; then
-  echo "[+] Creating  virtual Environment"
-  python3 -m venv "$VENV_PATH"
-fi
-
 # requirements without torch and xformers, to ensure our specific versions
 grep -vE 'torch|torchvision|torchaudio|xformers' \
      ComfyUI/requirements.txt >/tmp/req.txt

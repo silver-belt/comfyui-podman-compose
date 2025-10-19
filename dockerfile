@@ -39,9 +39,7 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     CUDA_CACHE_MAXSIZE=536870912
 
 # Prepare shared cache and temporary directories
-RUN mkdir -p /workspace/.cache /tmp && \
-    # One temp path, two entrances: /workspace/temp -> /tmp (same tmpfs)
-    ln -sfn /tmp /workspace/ComfyUI/temp
+RUN mkdir -p /workspace/.cache /tmp
 
 # Install Torch/cu128 & xformers
 RUN pip install --upgrade pip wheel setuptools && \
@@ -58,6 +56,8 @@ WORKDIR $WORKDIR
 # install ComfyUI and download reqirements (excluding already pinned ones above)
 RUN git config --global --add safe.directory /workspace/ComfyUI \
     && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
+# One temp path, two entrances: /workspace/ComfyUI/temp -> /tmp (same tmpfs)
+ln -sfn /tmp /workspace/ComfyUI/temp
 RUN grep -vE '^(torch|torchvision|torchaudio|xformers)($|=)' ComfyUI/requirements.txt > /tmp/req.txt \
     && pip install -r /tmp/req.txt
 

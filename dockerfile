@@ -35,14 +35,9 @@ RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}" \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=0 \
-    XDG_CACHE_HOME=/workspace/.cache \
-    HF_HOME=/workspace/.cache/huggingface \
-    TORCH_HOME=/workspace/.cache/torch \
-    PIP_CACHE_DIR=/workspace/.cache/pip \
-    # CUDA JIT cache in RAM (tmpfs)
+    TMPDIR=/tmp \
     CUDA_CACHE_PATH=/tmp/ComputeCache \
-    # Single temp location pointing to /tmp (tmpfs) – Compose can override
-    TMPDIR=/tmp
+    CUDA_CACHE_MAXSIZE=536870912
 
 # Prepare shared cache and temporary directories
 RUN mkdir -p /workspace/.cache /tmp && \

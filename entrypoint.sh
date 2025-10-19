@@ -47,12 +47,6 @@ if [ ! -x "$VENV_PATH/bin/pip" ]; then
   python3 -m venv "$VENV_PATH"
 fi
 
-$VENV_PATH/bin/pip install --upgrade pip
-$VENV_PATH/bin/pip install --no-cache-dir \
-  --extra-index-url https://download.pytorch.org/whl/cu124 \
-  torch==2.5.1+cu124 torchvision==0.20.1+cu124 \
-  torchaudio==2.5.1+cu124 xformers==0.0.28.post3 sageattention
-
 # requirements without torch and xformers, to ensure our specific versions
 grep -vE 'torch|torchvision|torchaudio|xformers' \
      ComfyUI/requirements.txt >/tmp/req.txt

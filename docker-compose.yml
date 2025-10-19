@@ -32,18 +32,10 @@ services:
       - TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers
       - TORCH_HOME=/workspace/.cache/torch
       - PIP_CACHE_DIR=/workspace/.cache/pip
-    deploy:
-      resources:
-        limits:
-          memory: 40g          # hard limit
-          cpus: "8.0"
-        reservations:
-          memory: 35g           # OOM-Killer earlier
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities:
-                - gpu           # Docker alternative to runtime: nvidia + NVIDIA_VISIBLE_DEVICES
+    device_requests:
+      - driver: nvidia
+        count: 1
+        capabilities: [gpu]
     restart: "no"
 
   proxy:

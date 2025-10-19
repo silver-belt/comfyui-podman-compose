@@ -11,9 +11,9 @@ services:
     mem_limit: "40g"
     cpus: "8.0"
     volumes:
-      - ./custom_nodes:/workspace/custom_nodes
-      - ./models:/workspace/models
-      - ./output:/workspace/output
+      - ./custom_nodes:/workspace/ComfyUI/custom_nodes
+      - ./models:/workspace/ComfyUI/models
+      - ./output:/workspace/ComfyUI/output
       # Persist all user settings and extra nodes
       - ./settings:/workspace/ComfyUI/user/default:rw
       # Persist only saved workflows (overrides the default workflows/ folder)
@@ -21,7 +21,7 @@ services:
       # Keep caches on disk for reproducibility and to save RAM
       - ./cache:/workspace/.cache
     tmpfs:
-      - /workspace/input:size=1G,mode=1777
+      - /workspace/ComfyUI/input:size=1G,mode=1777
       - /tmp:size=8G,mode=1777
     shm_size: "2g"  # Help ffmpeg/OpenCV with large jobs
     environment:

@@ -10,6 +10,8 @@ services:
     user: "1000:1000"
     expose:
       - "8188"
+    mem_limit: "40g"
+    cpus: "8.0"
     volumes:
       - ./custom_nodes:/workspace/custom_nodes
       - ./models:/workspace/models

@@ -61,6 +61,22 @@ echo "[+] Using container engine : ${ENGINE}"
 echo "[+] Using compose command  : ${COMPOSE_CMD[*]}"
 echo "[+] Compose files          : ${COMPOSE_FILES[*]//-f /}"
 
+# Ensure bind-mount targets exist with appropriate permissions
+prepare_bind_mount_dir() {
+  local dir=$1
+  local mode=${2:-}
+
+  mkdir -p "${dir}"
+  chown "$(id -u):$(id -g)" "${dir}"
+
+  if [[ -n ${mode} ]]; then
+    chmod "${mode}" "${dir}"
+  fi
+}
+
+prepare_bind_mount_dir tmp_disk 1777
+prepare_bind_mount_dir temp_disk 1777
+
 # Build container image
 "${COMPOSE_CMD[@]}" "${COMPOSE_FILES[@]}" build
 

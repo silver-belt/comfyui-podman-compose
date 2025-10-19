@@ -31,10 +31,13 @@ services:
       - TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers
       - TORCH_HOME=/workspace/.cache/torch
       - PIP_CACHE_DIR=/workspace/.cache/pip
-    device_requests:
-      - driver: nvidia
-        count: 1
-        capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     restart: "no"
 
   proxy:

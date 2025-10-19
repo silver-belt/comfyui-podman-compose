@@ -15,9 +15,9 @@ services:
       - ./models:/workspace/models
       - ./output:/workspace/output
       # Persist all user settings and extra nodes
-      - ./settings:/app/ComfyUI/user/default:rw
+      - ./settings:/workspace/ComfyUI/user/default:rw
       # Persist only saved workflows (overrides the default workflows/ folder)
-      - ./flows:/app/ComfyUI/user/default/workflows:rw
+      - ./flows:/workspace/ComfyUI/user/default/workflows:rw
       # Keep caches on disk for reproducibility and to save RAM
       - ./cache:/workspace/.cache
     tmpfs:

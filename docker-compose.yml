@@ -21,7 +21,6 @@ services:
       # Keep caches on disk for reproducibility and to save RAM
       - ./cache:/workspace/.cache
     tmpfs:
-      - /workspace/ComfyUI/input:size=1G,mode=1777
       - /tmp:size=8G,mode=1777
     shm_size: "2g"  # Help ffmpeg/OpenCV with large jobs
     environment:

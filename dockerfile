@@ -7,8 +7,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     VENV_PATH=/opt/venv \
     WORKDIR=/workspace \
     PATH="/opt/venv/bin:$PATH"
-# make ~/.local/bin available on the PATH so scripts like tqdm, torchrun, etc. are found
-ENV PATH=/home/appuser/.local/bin:$PATH
 
 # Install system dependencies required for ComfyUI
 RUN apt-get update \

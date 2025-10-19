@@ -15,6 +15,7 @@ RUN apt-get update \
         # Install Mesa/GL and GLib so OpenCV can load libGL.so.1 for ComfyUI-VideoHelperSuite
         libglib2.0-0 libgl1 libglx-mesa0 fonts-dejavu-core fontconfig \
         libsm6 libxext6 libxrender1 \
+        # only if custom nodes need ability to compile: build-essential python3-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure application user

@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# ---------- 1) link external dirs ----------
-mkdir -p ComfyUI
-ln -snf /workspace/custom_nodes /workspace/ComfyUI/custom_nodes 2>/dev/null || true
-ln -snf /workspace/models       /workspace/ComfyUI/models       2>/dev/null || true
-ln -snf /workspace/output       /workspace/ComfyUI/output       2>/dev/null || true
-ln -snf /workspace/input        /workspace/ComfyUI/input        2>/dev/null || true
-ln -snf /workspace/temp         /workspace/ComfyUI/temp         2>/dev/null || true
-
-# ---------- 2) sync with github comfyUI code ----------
+# ---------- 1) sync with github comfyUI code ----------
 if [ -n "${COMFYUI_REF:-}" ]; then
   echo "[+] Syncing ComfyUI to ref: $COMFYUI_REF"
   git -C ComfyUI fetch --depth=1 origin "$COMFYUI_REF"
@@ -23,7 +15,7 @@ $VENV_PATH/bin/pip install -r /patch-requirements.txt
 
 $VENV_PATH/bin/pip check || true   # true doesn't break the start on problems in check
 
-# ---------- 3) CUDA-Check ----------
+# ---------- 2) CUDA-Check ----------
 $VENV_PATH/bin/python - <<'PY'
 import torch, platform, textwrap, os, subprocess, shutil
 print(textwrap.dedent(f"""
@@ -41,7 +33,7 @@ if shutil.which("nvidia-smi"):
 print("="*30, flush=True)
 PY
 
-# ---------- 4) ComfyUI start ----------
+# ---------- 3) ComfyUI start ----------
 cd ComfyUI
 exec python3 main.py \
      --listen 0.0.0.0 \

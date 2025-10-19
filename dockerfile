@@ -41,7 +41,7 @@ ENV PATH="/opt/venv/bin:${PATH}" \
 # Prepare shared cache and temporary directories
 RUN mkdir -p /workspace/.cache /tmp && \
     # One temp path, two entrances: /workspace/temp -> /tmp (same tmpfs)
-    ln -sfn /tmp /workspace/temp
+    ln -sfn /tmp /workspace/ComfyUI/temp
 
 # Install Torch/cu128 & xformers
 RUN pip install --upgrade pip wheel setuptools && \

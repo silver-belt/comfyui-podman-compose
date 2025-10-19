@@ -23,10 +23,15 @@ ARG UID=1000
 ARG GID=1000
 ARG COMFYUI_REF=master
 RUN set -eux; \
-    groupadd --gid "${GID}" comfy; \
-    useradd --uid "${UID}" --gid "${GID}" \
-        --create-home --home-dir "$WORKDIR" \
-        --shell /bin/bash --no-log-init comfy
+    # 1) ensure group for $GID exists (might already be there under a different name)
+    if ! getent group "${GID}" >/dev/null; then \
+        groupadd -g "${GID}" comfy; \
+    fi; \
+    # 2) create user only if UID not taken yet
+    if ! id -u "${UID}" >/dev/null 2>&1; then \
+        useradd -u "${UID}" -g "${GID}" --create-home --home-dir "${WORKDIR}" \
+               --shell /bin/bash --no-log-init comfy; \
+    fi
 ENV COMFYUI_REF=$COMFYUI_REF
 # --- Built-in virtual environment (fast, reproducible) ---
 WORKDIR $WORKDIR

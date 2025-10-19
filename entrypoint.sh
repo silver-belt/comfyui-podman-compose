@@ -3,11 +3,11 @@ set -e
 
 # ---------- 1) link external dirs ----------
 mkdir -p ComfyUI
-ln -snf /workspace/custom_nodes ComfyUI/custom_nodes 2>/dev/null || true
-ln -snf /workspace/models       ComfyUI/models       2>/dev/null || true
-ln -snf /workspace/output       ComfyUI/output       2>/dev/null || true
-ln -snf /workspace/input        ComfyUI/input        2>/dev/null || true
-ln -snf /workspace/temp         ComfyUI/temp         2>/dev/null || true
+ln -snf /workspace/custom_nodes /workspace/ComfyUI/custom_nodes 2>/dev/null || true
+ln -snf /workspace/models       /workspace/ComfyUI/models       2>/dev/null || true
+ln -snf /workspace/output       /workspace/ComfyUI/output       2>/dev/null || true
+ln -snf /workspace/input        /workspace/ComfyUI/input        2>/dev/null || true
+ln -snf /workspace/temp         /workspace/ComfyUI/temp         2>/dev/null || true
 
 # ---------- 2) sync with github comfyUI code ----------
 if [ -n "${COMFYUI_REF:-}" ]; then

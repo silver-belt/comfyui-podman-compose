@@ -61,6 +61,7 @@ RUN grep -vE '^(torch|torchvision|torchaudio|xformers)($|=)' ComfyUI/requirement
 
 # Copy application entrypoint and dependency patches
 COPY --chown=comfy:comfy entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 COPY --chown=comfy:comfy patch-requirements.txt /patch-requirements.txt
 ENTRYPOINT ["/usr/bin/tini","--","/entrypoint.sh"]
 EXPOSE 8188

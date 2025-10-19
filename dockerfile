@@ -55,7 +55,9 @@ RUN chown -R "${UID}:${GID}" /opt/venv "$WORKDIR"
 USER comfy
 WORKDIR $WORKDIR
 
-RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
+# install ComfyUI and download reqirements (excluding already pinned ones above)
+RUN git config --global --add safe.directory /workspace/ComfyUI \
+    && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
 RUN grep -vE '^(torch|torchvision|torchaudio|xformers)($|=)' ComfyUI/requirements.txt > /tmp/req.txt \
     && pip install -r /tmp/req.txt
 

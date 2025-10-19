@@ -66,6 +66,5 @@ exec python3 main.py \
      --listen 0.0.0.0 \
      --use-sage-attention \
      --preview-method auto \
-     --lowvram \
      "$@"
 

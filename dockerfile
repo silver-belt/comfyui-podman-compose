@@ -56,8 +56,8 @@ RUN printf '%s\n' \
   'torch==2.8.0' \
   'torchvision==0.23.0' \
   'torchaudio==2.8.0' \
-  'xformers==0.0.27.post2' \
-  > /opt/constraints.txt
+  'xformers==0.0.32.post2' \
+  > ${WORKDIR}/constraints.txt
 
 # install PyTorch/cu128 & xformers (with BuildKit-Pipcache for Speed)
 # Hint: --mount=type=cache needs DOCKER_BUILDKIT=1
@@ -65,7 +65,7 @@ RUN --mount=type=cache,target=/workspace/.cache/pip \
     python -m pip install --upgrade pip wheel setuptools && \
     python -m pip install \
       --index-url https://download.pytorch.org/whl/cu128 \
-      -r /opt/constraints.txt && \
+      -r ${WORKDIR}/constraints.txt && \
     # Other Low-Level Libs (z. B. sageattention)
     python -m pip install --no-deps sageattention
 
@@ -81,16 +81,16 @@ RUN --mount=type=cache,target=/workspace/.cache/pip \
     grep -vE '^(torch(|vision|audio)|xformers)([[:space:]]*([<>=!~]=?).*)?$' \
         ComfyUI/requirements.txt > /tmp/req.txt && \
     # Tripwire: dry-run must not plan a torch uninstall
-    python -m pip install --dry-run -r /tmp/req.txt -c /opt/constraints.txt \
+    python -m pip install --dry-run -r /tmp/req.txt -c ${WORKDIR}/constraints.txt \
       2>&1 | tee /tmp/pip_dry.log && \
     ! grep -q "Uninstalling torch" /tmp/pip_dry.log && \
     # Actual install (respect constraints)
     python -m pip install --upgrade-strategy only-if-needed \
-      -r /tmp/req.txt -c /opt/constraints.txt
+      -r /tmp/req.txt -c ${WORKDIR}/constraints.txt
 
 # Copy application entrypoint and dependency patches
-COPY --chown=${UID}:${GID} entrypoint.sh /entrypoint.sh
-RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
-COPY --chown=${UID}:${GID} patch-requirements.txt /patch-requirements.txt
-ENTRYPOINT ["/usr/bin/tini","--","/entrypoint.sh"]
+COPY --chown=${UID}:${GID} entrypoint.sh ${WORKDIR}/entrypoint.sh
+RUN sed -i 's/\r$//' ${WORKDIR}/entrypoint.sh && chmod +x ${WORKDIR}/entrypoint.sh
+COPY --chown=${UID}:${GID} patch-requirements.txt ${WORKDIR}/ComfyUI/patch-requirements.txt
+ENTRYPOINT ["/usr/bin/tini","--","/workspace/entrypoint.sh"]
 EXPOSE 8188

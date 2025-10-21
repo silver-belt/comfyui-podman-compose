@@ -15,7 +15,8 @@ RUN apt-get update \
         # Install Mesa/GL and GLib so OpenCV can load libGL.so.1 for ComfyUI-VideoHelperSuite
         libglib2.0-0 libgl1 libglx-mesa0 fonts-dejavu-core fontconfig \
         libsm6 libxext6 libxrender1 \
-        # only if custom nodes need ability to compile: build-essential python3-dev pkg-config \
+        # only if custom nodes need ability to compile:
+        # build-essential python3-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure application user
@@ -50,21 +51,42 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     CUDA_CACHE_PATH=/tmp/ComputeCache \
     CUDA_CACHE_MAXSIZE=536870912
 
-# Install Torch/cu128 & xformers
-RUN pip install --upgrade pip wheel setuptools && \
-    pip install \
-      torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 \
-      --index-url https://download.pytorch.org/whl/cu128 && \
-    pip install xformers==0.0.27.post2 sageattention
+# --- Torch/X pins as Constraints
+RUN printf '%s\n' \
+  'torch==2.8.0' \
+  'torchvision==0.23.0' \
+  'torchaudio==2.8.0' \
+  'xformers==0.0.27.post2' \
+  > /opt/constraints.txt
+
+# install PyTorch/cu128 & xformers (with BuildKit-Pipcache for Speed)
+# Hint: --mount=type=cache needs DOCKER_BUILDKIT=1
+RUN --mount=type=cache,target=/workspace/.cache/pip \
+    python -m pip install --upgrade pip wheel setuptools && \
+    python -m pip install \
+      --index-url https://download.pytorch.org/whl/cu128 \
+      -r /opt/constraints.txt && \
+    # Other Low-Level Libs (z. B. sageattention)
+    python -m pip install --no-deps sageattention
 
 # install ComfyUI and download reqirements (excluding already pinned ones above)
 RUN git config --global --add safe.directory /workspace/ComfyUI \
-    && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI
-# One temp path, two entrances: /workspace/ComfyUI/temp -> /tmp (same tmpfs)
-RUN ln -sfn /tmp /workspace/ComfyUI/temp \
-    && ln -sfn /tmp/Input /workspace/ComfyUI/input
-RUN grep -vE '^(torch|torchvision|torchaudio|xformers)($|=)' ComfyUI/requirements.txt > /tmp/req.txt \
-    && pip install -r /tmp/req.txt
+ && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI \
+ && ln -sfn /tmp /workspace/ComfyUI/temp \
+ && ln -sfn /tmp/Input /workspace/ComfyUI/input
+
+# install ComfyUI requirements (excluding already pinned torch stack)
+# Use a broader regex to exclude any torch specifier (==, ~=, >=, etc.)
+RUN --mount=type=cache,target=/workspace/.cache/pip \
+    grep -vE '^(torch(|vision|audio)|xformers)([[:space:]]*([<>=!~]=?).*)?$' \
+        ComfyUI/requirements.txt > /tmp/req.txt && \
+    # Tripwire: dry-run must not plan a torch uninstall
+    python -m pip install --dry-run -r /tmp/req.txt -c /opt/constraints.txt \
+      2>&1 | tee /tmp/pip_dry.log && \
+    ! grep -q "Uninstalling torch" /tmp/pip_dry.log && \
+    # Actual install (respect constraints)
+    python -m pip install --upgrade-strategy only-if-needed \
+      -r /tmp/req.txt -c /opt/constraints.txt
 
 # Copy application entrypoint and dependency patches
 COPY --chown=${UID}:${GID} entrypoint.sh /entrypoint.sh
@@ -72,4 +94,3 @@ RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 COPY --chown=${UID}:${GID} patch-requirements.txt /patch-requirements.txt
 ENTRYPOINT ["/usr/bin/tini","--","/entrypoint.sh"]
 EXPOSE 8188
-

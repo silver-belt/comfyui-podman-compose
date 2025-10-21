@@ -11,7 +11,7 @@ else
 fi
   
 # if there are patches these have to be installed
-$VENV_PATH/bin/pip install -r /patch-requirements.txt
+$VENV_PATH/bin/pip install -r ./patch-requirements.txt
 
 $VENV_PATH/bin/pip check || true   # true doesn't break the start on problems in check
 

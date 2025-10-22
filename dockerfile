@@ -1,4 +1,4 @@
-# ---------- Stage: base ----------
+# syntax=docker/dockerfile:1.7-labs
 FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04
 
 # Configure environment variables and paths
@@ -44,10 +44,10 @@ WORKDIR ${WORKDIR}
 
 # --- Built-in virtual environment (fast, reproducible) ---
 RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:${PATH}" \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=0 \
     TMPDIR=/tmp \
+    PIP_CACHE_DIR=/workspace/.cache/pip \
     CUDA_CACHE_PATH=/tmp/ComputeCache \
     CUDA_CACHE_MAXSIZE=536870912
 
@@ -61,15 +61,15 @@ RUN printf '%s\n' \
 
 # install PyTorch/cu128 & xformers (with BuildKit-Pipcache for Speed)
 # Hint: --mount=type=cache needs DOCKER_BUILDKIT=1
-RUN --mount=type=cache,target=/workspace/.cache/pip \
-    python -m pip install --upgrade pip wheel setuptools && \
+RUN --mount=type=cache,target=/workspace/.cache/pip,id=pip-cache \
+    python -m pip install "pip==25.2" "setuptools==80.9.0" "wheel==0.45.1" && \
     python -m pip install \
       --index-url https://download.pytorch.org/whl/cu128 \
       -r ${WORKDIR}/constraints.txt && \
     # Other Low-Level Libs (z. B. sageattention)
     python -m pip install --no-deps sageattention
 
-# install ComfyUI and download reqirements (excluding already pinned ones above)
+# install ComfyUI and download requirements (excluding already pinned ones above)
 RUN git config --global --add safe.directory /workspace/ComfyUI \
  && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI \
  && ln -sfn /tmp /workspace/ComfyUI/temp \
@@ -77,7 +77,7 @@ RUN git config --global --add safe.directory /workspace/ComfyUI \
 
 # install ComfyUI requirements (excluding already pinned torch stack)
 # Use a broader regex to exclude any torch specifier (==, ~=, >=, etc.)
-RUN --mount=type=cache,target=/workspace/.cache/pip \
+RUN --mount=type=cache,target=/workspace/.cache/pip,id=pip-cache \
     grep -vE '^(torch(|vision|audio)|xformers)([[:space:]]*([<>=!~]=?).*)?$' \
         ComfyUI/requirements.txt > /tmp/req.txt && \
     # Tripwire: dry-run must not plan a torch uninstall
@@ -86,7 +86,8 @@ RUN --mount=type=cache,target=/workspace/.cache/pip \
     ! grep -q "Uninstalling torch" /tmp/pip_dry.log && \
     # Actual install (respect constraints)
     python -m pip install --upgrade-strategy only-if-needed \
-      -r /tmp/req.txt -c ${WORKDIR}/constraints.txt
+      -r /tmp/req.txt -c ${WORKDIR}/constraints.txt && \
+    python -m pip check
 
 # Copy application entrypoint and dependency patches
 COPY --chown=${UID}:${GID} entrypoint.sh ${WORKDIR}/entrypoint.sh

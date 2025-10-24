@@ -29,11 +29,27 @@ It supports both **Podman** and **Docker**, and can optionally serve the UI behi
 
 ## Directory Layout
 
-Create these directories in the repository root before starting:
+The stack persists its data through bind mounts located in the repository root:
 - `custom_nodes/`
 - `models/`
 - `output/`
-- `venv/`
+- `settings/`
+- `flows/`
+- `cache/`
+
+When you run `docker compose up` (or the `run_comfy.sh` helper), a short‑lived
+initialisation container creates these directories if they do not exist yet and
+adjusts their permissions so that the main `comfyui` service can write to them.
+You can still pre-create the directories manually if you want to fine-tune
+ownership or restrict permissions more tightly.
+
+If you want to store any of the bind-mounted directories somewhere else (for
+example on a large external disk), edit the `x-host-paths` section at the top of
+`docker-compose.yml`. Both the main service and the helper container reuse that
+single mapping, so you only have to change the path in one place. Likewise, the
+memory limit, CPU quota, and `/tmp` tmpfs size for the `comfyui` service are
+collected in the `x-comfyui-resources` mapping so they can be adjusted from a
+single place as well.
 
 ---
 
@@ -81,7 +97,9 @@ Optionally, the ComfyUI instance can be served through an `nginx` reverse proxy 
    git clone <repo-url>
    cd comfyui-podman-compose
    ```
-2. Create the required directories listed above.
+2. (Optional) Pre-create any of the directories listed above if you want to
+   control their ownership or permissions manually. Otherwise, the helper
+   container spawned by Compose will create them on demand.
 3. Start the container:
     ```bash
     ./run_comfy.sh

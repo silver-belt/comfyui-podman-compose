@@ -31,13 +31,13 @@ services:
       sh -c '
         set -eu
         for dir in custom_nodes models output settings flows cache; do
-          target="/mnt/${dir}"
-          if ! install -d -m 0777 "${target}"; then
-            echo "install failed for ${target}, attempting fallback" >&2
-            mkdir -p "${target}"
-            chmod 0777 "${target}"
+          target="/mnt/$${dir}"
+          if ! install -d -m 0777 "$${target}"; then
+            echo "install failed for $${target}, attempting fallback" >&2
+            mkdir -p "$${target}"
+            chmod 0777 "$${target}"
           fi
-          chown -R 1000:1000 "${target}"
+          chown -R 1000:1000 "$${target}"
         done
       '
     volumes:

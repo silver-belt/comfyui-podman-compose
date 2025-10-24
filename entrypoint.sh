@@ -33,6 +33,31 @@ if [ -d "$COMFY_MANAGER_DIR" ]; then
     done
   fi
 fi
+
+CUSTOM_NODES_FLAG_FILE="$WORKDIR/.custom-nodes-bootstrapped"
+if [ ! -f "$CUSTOM_NODES_FLAG_FILE" ]; then
+  echo "[+] First container start detected – installing custom node requirements"
+  if [ -d "$COMFY_CUSTOM_NODES_DIR" ]; then
+    requirement_files=()
+    while IFS= read -r -d '' requirement_file; do
+      requirement_files+=("$requirement_file")
+    done < <(find "$COMFY_CUSTOM_NODES_DIR" -mindepth 1 -maxdepth 3 -type f -name 'requirements*.txt' -print0)
+    if [ ${#requirement_files[@]} -gt 0 ]; then
+      for requirement_file in "${requirement_files[@]}"; do
+        relative_path="${requirement_file#$COMFY_CUSTOM_NODES_DIR/}"
+        echo "[+] Installing custom node Python dependencies from ${relative_path:-${requirement_file##*/}}"
+        "$VENV_PATH/bin/pip" install -r "$requirement_file"
+      done
+    else
+      echo "[+] No custom node requirement files found"
+    fi
+  else
+    echo "[!] Custom nodes directory $COMFY_CUSTOM_NODES_DIR not found"
+  fi
+  touch "$CUSTOM_NODES_FLAG_FILE"
+else
+  echo "[+] Custom node requirements previously installed – skipping"
+fi
   
 # if there are patches these have to be installed
 $VENV_PATH/bin/pip install -r $WORKDIR/ComfyUI/patch-requirements.txt

@@ -9,6 +9,30 @@ if [ -n "${COMFYUI_REF:-}" ]; then
 else
   git -C ComfyUI pull --ff-only
 fi
+
+# ---------- 1b) ensure ComfyUI-Manager is available ----------
+COMFY_CUSTOM_NODES_DIR="ComfyUI/custom_nodes"
+COMFY_MANAGER_DIR="$COMFY_CUSTOM_NODES_DIR/ComfyUI-Manager"
+if [ ! -d "$COMFY_MANAGER_DIR" ]; then
+  echo "[+] Installing ComfyUI-Manager into $COMFY_MANAGER_DIR"
+  mkdir -p "$COMFY_CUSTOM_NODES_DIR"
+  if git clone --depth=1 https://github.com/Comfy-Org/ComfyUI-Manager "$COMFY_MANAGER_DIR"; then
+    echo "[+] ComfyUI-Manager clone completed"
+  else
+    echo "[!] Failed to clone ComfyUI-Manager" >&2
+  fi
+else
+  echo "[+] ComfyUI-Manager already present in $COMFY_MANAGER_DIR"
+fi
+
+if [ -d "$COMFY_MANAGER_DIR" ]; then
+  if compgen -G "$COMFY_MANAGER_DIR/requirements*.txt" > /dev/null; then
+    for requirement_file in "$COMFY_MANAGER_DIR"/requirements*.txt; do
+      echo "[+] Installing ComfyUI-Manager Python dependencies from ${requirement_file##*/}"
+      "$VENV_PATH/bin/pip" install -r "$requirement_file"
+    done
+  fi
+fi
   
 # if there are patches these have to be installed
 $VENV_PATH/bin/pip install -r ./patch-requirements.txt

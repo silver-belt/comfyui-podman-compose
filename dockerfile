@@ -35,8 +35,7 @@ RUN set -eux; \
     fi
 ENV COMFYUI_REF=$COMFYUI_REF
 # Prepare writable paths before switching users
-RUN install -d -m 0755 -o "${UID}" -g "${GID}" /opt/venv "${WORKDIR}" "${WORKDIR}/.cache" /tmp /tmp/Input \
-    "${WORKDIR}/ComfyUI/custom_nodes" "${WORKDIR}/ComfyUI/user/default"
+RUN install -d -m 0755 -o "${UID}" -g "${GID}" /opt/venv "${WORKDIR}" "${WORKDIR}/.cache" /tmp /tmp/Input
 
 # Continue as numeric user from this point forward
 USER ${UID}:${GID}
@@ -73,6 +72,7 @@ RUN --mount=type=cache,target=/workspace/.cache/pip,id=pip-cache \
 # install ComfyUI and download requirements (excluding already pinned ones above)
 RUN git config --global --add safe.directory /workspace/ComfyUI \
  && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git ComfyUI \
+ && install -d -m 0755 /workspace/ComfyUI/custom_nodes /workspace/ComfyUI/user/default \
  && ln -sfn /tmp /workspace/ComfyUI/temp \
  && ln -sfn /tmp/Input /workspace/ComfyUI/input
 

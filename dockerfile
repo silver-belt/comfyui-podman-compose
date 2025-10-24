@@ -35,7 +35,8 @@ RUN set -eux; \
     fi
 ENV COMFYUI_REF=$COMFYUI_REF
 # Prepare writable paths before switching users
-RUN install -d -m 0755 -o "${UID}" -g "${GID}" /opt/venv "${WORKDIR}" "${WORKDIR}/.cache" /tmp /tmp/Input
+RUN install -d -m 0755 -o "${UID}" -g "${GID}" /opt/venv "${WORKDIR}" "${WORKDIR}/.cache" /tmp /tmp/Input \
+    "${WORKDIR}/ComfyUI/custom_nodes" "${WORKDIR}/ComfyUI/user/default"
 
 # Continue as numeric user from this point forward
 USER ${UID}:${GID}

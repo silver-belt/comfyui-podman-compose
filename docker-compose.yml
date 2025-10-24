@@ -1,27 +1,95 @@
+x-host-paths: &host-paths
+  custom_nodes: &host-custom_nodes
+    source: ./custom_nodes
+    read_only: false
+  models: &host-models
+    source: ./models
+  output: &host-output
+    source: ./output
+    read_only: false
+  settings: &host-settings
+    source: ./settings
+    read_only: false
+  flows: &host-flows
+    source: ./flows
+    read_only: false
+  cache: &host-cache
+    source: ./cache
+    read_only: false
+
+x-comfyui-resources: &comfyui-resources
+  mem_limit: "40g"
+  cpus: "8.0"
+  tmpfs:
+    - /tmp:size=8G,mode=1777
+
 services:
+  volume-permissions:
+    image: alpine:3.20
+    container_name: comfyui-volume-permissions
+    command: >-
+      sh -c '
+        set -eu
+        for dir in custom_nodes models output settings flows cache; do
+          install -d -m 0777 "/mnt/${dir}"
+        done
+      '
+    volumes:
+      - type: bind
+        <<: *host-custom_nodes
+        target: /mnt/custom_nodes
+      - type: bind
+        <<: *host-models
+        target: /mnt/models
+      - type: bind
+        <<: *host-output
+        target: /mnt/output
+      - type: bind
+        <<: *host-settings
+        target: /mnt/settings
+      - type: bind
+        <<: *host-flows
+        target: /mnt/flows
+      - type: bind
+        <<: *host-cache
+        target: /mnt/cache
+    restart: "no"
+
   comfyui:
     image: comfyui:latest
     container_name: comfyui
+    <<: *comfyui-resources
     build:
       context: .
       dockerfile: dockerfile
     user: "1000:1000"
     expose:
       - "8188"
-    mem_limit: "40g"
-    cpus: "8.0"
+    depends_on:
+      volume-permissions:
+        condition: service_completed_successfully
     volumes:
-      - ./custom_nodes:/workspace/ComfyUI/custom_nodes
-      - ./models:/workspace/ComfyUI/models
-      - ./output:/workspace/ComfyUI/output
+      - type: bind
+        <<: *host-custom_nodes
+        target: /workspace/ComfyUI/custom_nodes
+      - type: bind
+        <<: *host-models
+        target: /workspace/ComfyUI/models
+      - type: bind
+        <<: *host-output
+        target: /workspace/ComfyUI/output
       # Persist all user settings and extra nodes
-      - ./settings:/workspace/ComfyUI/user/default:rw
+      - type: bind
+        <<: *host-settings
+        target: /workspace/ComfyUI/user/default
       # Persist only saved workflows (overrides the default workflows/ folder)
-      - ./flows:/workspace/ComfyUI/user/default/workflows:rw
+      - type: bind
+        <<: *host-flows
+        target: /workspace/ComfyUI/user/default/workflows
       # Keep caches on disk for reproducibility and to save RAM
-      - ./cache:/workspace/.cache
-    tmpfs:
-      - /tmp:size=8G,mode=1777
+      - type: bind
+        <<: *host-cache
+        target: /workspace/.cache
     shm_size: "2g"  # Help ffmpeg/OpenCV with large jobs
     environment:
       # Cache directories on the persistent volume
